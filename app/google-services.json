@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "723792049809",
+    "firebase_url": "https://bae-guard-2ba48-default-rtdb.firebaseio.com",
+    "project_id": "bae-guard-2ba48",
+    "storage_bucket": "bae-guard-2ba48.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723792049809:android:93f6cb9f438be67f47b130",
+        "android_client_info": {
+          "package_name": "com.example.baeguard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "723792049809-fclkipmoi0q1aschdt13hjj968gbri4e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKGogaboTz7Gvka29VjjyopSwL8TKbYuE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "723792049809-fclkipmoi0q1aschdt13hjj968gbri4e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">baeguard</string>
+    <string name="logov31_content_description" />
+    <string name="fundologin_content_description" />
+    <string name="image1_content_description" />
+    <string name="logo_bae_content_description" />
+    <string name="arrow_forward_ios" />
+    <string name="humidade_content_description" />
+    <string name="confirmation_dialog_message">Tem certeza que deseja excluir sua conta?</string>
+    <string name="confirmation_dialog_confirm_button" />
+    <string name="confirmation_dialog_cancel_button" />
+    <string name="confirmacao_dialog_title">Confirmação de Exclusão</string>
+    <string name="temperatura_content_description">temperatura</string>
+    <string name="confirmacaodisp_dialog_title">Tem certeza que deseja excluir esse dispositivo?</string>
+    <string name="confirmationdips_dialog_message">Confirmação de Exclusão</string>
+    <string name="title_activity_main_screen">MainScreenActivity</string>
+
+    <string name="web_client">723792049809-fclkipmoi0q1aschdt13hjj968gbri4e.apps.googleusercontent.com</string>
+
+</resources>

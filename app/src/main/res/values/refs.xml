@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <drawable name="baseline_edemail_24" />
+    <drawable name="baseline_ednome_24" />
+    <drawable name="baseline_delconta_24" />
+    <drawable name="frame2" />
+    <drawable name="device_thermostat" />
+    <drawable name="baseline_adddisp_24" />
+    <drawable name="baseline_disp_dt_24" />
+</resources>
