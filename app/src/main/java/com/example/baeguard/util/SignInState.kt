@@ -1,6 +1,7 @@
 package com.example.baeguard.util
 
 data class SignInState(
-    val isSignInSuccessful: Boolean = false,
-    val signInError: String? = null
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
+    val isError: String? = ""
 )

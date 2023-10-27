@@ -1,5 +1,6 @@
 package com.example.baeguard.presenter.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,10 +19,8 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
@@ -31,14 +30,13 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,33 +44,62 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.baeguard.R
+import com.example.baeguard.data.model.Ambiente
+import com.example.baeguard.presenter.viewmodel.DispDtViewModel
+import com.example.baeguard.util.UiState
+
+private val TAG = "BAE ADD DISP"
 
 @Composable
-fun Add_DispoScreen(navController: NavHostController) {
+fun Add_DispoScreen(
+    navController: NavHostController,
+    dispDtViewModel: DispDtViewModel = hiltViewModel()
+) {
 
-    var deviceName by remember { mutableStateOf(TextFieldValue()) }
+    var deviceName by remember { mutableStateOf("") }
     var environmentName by remember { mutableStateOf("") }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isNewEnvironment by remember { mutableStateOf(false) } // Checkbox state
 
-    val environments = listOf("Casa em Guarujá", "Casa em São Paulo", "Casa em Atibaia")
+    val ambientes = remember { mutableStateListOf<Ambiente>() }
+
+    dispDtViewModel.getAllAmbientes()
+    dispDtViewModel.allambientes.observe(LocalLifecycleOwner.current){ state ->
+        when(state){
+            is UiState.Loading -> {
+
+            }
+            is UiState.Failure -> {
+                Log.e(TAG, state.error.toString())
+            }
+            is UiState.Success -> {
+                ambientes.clear()
+                state.data.forEach{
+                    ambientes.add(it)
+                }
+            }
+        }
+
+    }
+
     LazyColumn(
                 modifier = Modifier
-                .background(colorResource(id = R.color.colorProfile))
-            .fillMaxSize()
+                    .background(colorResource(id = R.color.colorProfile))
+                    .fillMaxSize()
     ) {
         item {
             Column(
@@ -142,7 +169,9 @@ fun Add_DispoScreen(navController: NavHostController) {
                 } else {
 
                     Box(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
                     ) {
                         Column(
                             modifier = Modifier.fillMaxWidth()
@@ -154,7 +183,8 @@ fun Add_DispoScreen(navController: NavHostController) {
                             )
 
                             Box(
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
                                     .border(
                                         width = 1.dp,
                                         color = if (isDropdownExpanded) Color(0xffffe98a) else Color.White,
@@ -189,15 +219,15 @@ fun Add_DispoScreen(navController: NavHostController) {
                                 expanded = isDropdownExpanded,
                                 onDismissRequest = { isDropdownExpanded = false }
                             ) {
-                                environments.forEach { item ->
+                                ambientes.forEach { item ->
                                     DropdownMenuItem(
                                         onClick = {
-                                            environmentName = item
+                                            environmentName = item.nome
                                             isDropdownExpanded = false
                                         }
                                     ) {
                                         Text(
-                                            text = item,
+                                            text = item.nome,
                                             color = Color.Black, // Customize the text color of the dropdown items
                                             style = LocalTextStyle.current.copy(fontSize = 16.sp)
                                         )
@@ -239,7 +269,7 @@ fun Add_DispoScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     androidx.compose.material.Button(
-                        onClick = { navController.navigate("add_qr") },
+                        onClick = { navController.navigate("add_qr/$deviceName/$environmentName") },
                         shape = RoundedCornerShape(6.dp),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = Color(0xffe05950),

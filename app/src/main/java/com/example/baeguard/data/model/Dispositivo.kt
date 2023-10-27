@@ -7,6 +7,7 @@ data class Dispositivo(
     var nome: String = "",
     var CO2: Boolean = false,
     var GLP: Boolean = false,
+    var chama: Boolean = false,
     var URLcam: String = "",
     var temperatura: Int = 0,
     var umidade: Int = 0,

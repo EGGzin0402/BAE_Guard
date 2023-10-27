@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,162 +54,33 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.baeguard.R
+import com.example.baeguard.presenter.viewmodel.SignUpViewModel
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun tela_cadastro(
-    navController: NavController
+    navController: NavController,
+    mainScreen: () -> Unit,
+    signUpViewModel: SignUpViewModel = hiltViewModel()
 ) {
-    TextFieldWithIconsSignUp()
-    ConfirmaSenha()
-    SignUp(navController) {
-        Text(" ")
+
+    var scope = rememberCoroutineScope()
+    var email by remember { mutableStateOf("") }
+    var senha by remember { mutableStateOf("") }
+    var confirmaSenha by remember { mutableStateOf("") }
+    val state by signUpViewModel.signUpState.collectAsStateWithLifecycle()
+
+    if(state.isSuccess){
+        mainScreen()
     }
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TextFieldWithIconsSignUp() {
-    var value by remember { mutableStateOf("") }
-
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-            .clip(RoundedCornerShape(50.dp))
-            .background(Color(0xffe7e0cf))
-    ) {
-        TextField(
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            value = value,
-            onValueChange = { newText ->
-                value = newText
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "Email Icon",
-                    tint = Color.Black
-                )
-            },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Person Icon",
-                    tint = Color.Black
-                )
-            },
-            label = { Text(text = "E-mail", color = Color.Black) },
-            placeholder = { Text(text = "Digite seu e-mail", color = Color.Black) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.textFieldColors(
-                cursorColor = Color(0xFF1D1D1D),
-                textColor = Color(0xFF1D1D1D),
-                placeholderColor = Color(0xFF1D1D1D),
-                containerColor = Color(0xffe7e0cf)
-            )
-        )
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ConfirmaSenha() {
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
-    var showPassword2 by remember { mutableStateOf(false) }
-
-    TextField(
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        value = password,
-        onValueChange = { newText ->
-            password = newText
-        },
-        label = { Text(text = "Senha", color = Color.Black) },
-        placeholder = { Text(text = "Digite sua senha", color = Color.Black) },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "Lock Icon",
-                tint = Color.Black
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = { showPassword = !showPassword }) {
-                Icon(
-                    painter = painterResource(id = if (showPassword) R.drawable.baseline_close_24  else R.drawable.baseline_remove_red_eye_24 ),
-                    tint = Color.Black,
-                    contentDescription = if (showPassword) "Hide Password" else "Show Password"
-                )
-            }
-        },
-        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(50.dp))
-            .background(Color(0xffe7e0cf)),
-        colors = TextFieldDefaults.textFieldColors(
-            cursorColor = Color.Black,
-            textColor = Color.Black,
-            placeholderColor = Color.Black,
-            containerColor = Color(color = 0xffe7e0cf)
-        )
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-    Spacer(modifier = Modifier.height(16.dp))
-    TextField(
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        value = confirmPassword,
-        onValueChange = { newText ->
-            confirmPassword = newText
-        },
-        label = { Text(text = "Confirme sua Senha", color = Color.Black) },
-        placeholder = { Text(text = "Digite sua senha", color = Color.Black) },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "Lock Icon",
-                tint = Color.Black
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = { showPassword2 = !showPassword2 }) {
-                Icon(
-                    painter = painterResource(id = if (showPassword2) R.drawable.baseline_close_24  else R.drawable.baseline_remove_red_eye_24 ),
-                    tint = Color.Black,
-                    contentDescription = if (showPassword2) "Hide Password" else "Show Password"
-                )
-            }
-        },
-        visualTransformation = if (showPassword2) VisualTransformation.None else PasswordVisualTransformation(),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(50.dp))
-            .background(Color(0xffe7e0cf)),
-        colors = TextFieldDefaults.textFieldColors(
-            cursorColor = Color.Black,
-            textColor = Color.Black,
-            placeholderColor = Color.Black,
-            containerColor = Color(color = 0xffe7e0cf)
-        )
-    )
-
-    // You can add further validation and feedback here if needed.
-}
-
-@Composable
-fun SignUp(navController: NavController, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
 
     Spacer(modifier = Modifier.height(50.dp))
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .drawBehind {
                 val width = size.width
@@ -251,13 +123,26 @@ fun SignUp(navController: NavController, modifier: Modifier = Modifier, content:
                     .padding(bottom = 10.dp)
                     .padding(top = 50.dp)
             )
+
             // Substituir o TextField existente pela função TextFieldWithIcons
-            TextFieldWithIconsSignUp()
+            TextFieldWithIconsSignUp{ newValue ->
+                email = newValue
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
-            ConfirmaSenha()
+
+            ConfirmaSenha({ newValue ->
+                senha = newValue
+            },{ newValue ->
+                confirmaSenha = newValue
+            })
 
             Button(
-                onClick = { /* Ação de login aqui */ },
+                onClick = {
+                    scope.launch {
+                        signUpViewModel.registerUser(email,senha)
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(Color(color = 0xFC000000)),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -273,9 +158,7 @@ fun SignUp(navController: NavController, modifier: Modifier = Modifier, content:
                 text = "Já possui uma conta?",
                 color = Color.Black,
                 style = TextStyle(fontSize = 16.sp),
-                modifier = Modifier.clickable {
-                    // Add your navigation logic here to navigate to the sign-up screen
-                }
+                modifier = Modifier
             )
 
             Text(
@@ -312,10 +195,152 @@ fun SignUp(navController: NavController, modifier: Modifier = Modifier, content:
                         .padding(10.dp)
                 )
             }
-            // Call the content lambda function passed to CircleBox
-            content()
         }
 
 
     }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextFieldWithIconsSignUp(onValueChanged: (String) -> Unit) {
+    var value by remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .padding(16.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(Color(0xffe7e0cf))
+    ) {
+        TextField(
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            value = value,
+            onValueChange = { newText ->
+                value = newText
+                onValueChanged(newText)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "Email Icon",
+                    tint = Color.Black
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Person Icon",
+                    tint = Color.Black
+                )
+            },
+            label = { Text(text = "E-mail", color = Color.Black) },
+            placeholder = { Text(text = "Digite seu e-mail", color = Color.Black) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = Color(0xFF1D1D1D),
+                textColor = Color(0xFF1D1D1D),
+                placeholderColor = Color(0xFF1D1D1D),
+                containerColor = Color(0xffe7e0cf)
+            )
+        )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ConfirmaSenha(onValueChanged: (String) -> Unit, onValueChanged2: (String) -> Unit) {
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
+    var showPassword2 by remember { mutableStateOf(false) }
+
+    TextField(
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        value = password,
+        onValueChange = { newText ->
+            password = newText
+            onValueChanged(newText)
+        },
+        label = { Text(text = "Senha", color = Color.Black) },
+        placeholder = { Text(text = "Digite sua senha", color = Color.Black) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "Lock Icon",
+                tint = Color.Black
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = { showPassword = !showPassword }) {
+                Icon(
+                    painter = painterResource(id = if (showPassword) R.drawable.baseline_close_24  else R.drawable.baseline_remove_red_eye_24 ),
+                    tint = Color.Black,
+                    contentDescription = if (showPassword) "Hide Password" else "Show Password"
+                )
+            }
+        },
+        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(Color(0xffe7e0cf)),
+        colors = TextFieldDefaults.textFieldColors(
+            cursorColor = Color.Black,
+            textColor = Color.Black,
+            placeholderColor = Color.Black,
+            containerColor = Color(color = 0xffe7e0cf)
+        )
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(16.dp))
+    TextField(
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        value = confirmPassword,
+        onValueChange = { newText ->
+            confirmPassword = newText
+            onValueChanged2(newText)
+        },
+        label = { Text(text = "Confirme sua Senha", color = Color.Black) },
+        placeholder = { Text(text = "Digite sua senha", color = Color.Black) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "Lock Icon",
+                tint = Color.Black
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = { showPassword2 = !showPassword2 }) {
+                Icon(
+                    painter = painterResource(id = if (showPassword2) R.drawable.baseline_close_24  else R.drawable.baseline_remove_red_eye_24 ),
+                    tint = Color.Black,
+                    contentDescription = if (showPassword2) "Hide Password" else "Show Password"
+                )
+            }
+        },
+        visualTransformation = if (showPassword2) VisualTransformation.None else PasswordVisualTransformation(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(Color(0xffe7e0cf)),
+        colors = TextFieldDefaults.textFieldColors(
+            cursorColor = Color.Black,
+            textColor = Color.Black,
+            placeholderColor = Color.Black,
+            containerColor = Color(color = 0xffe7e0cf)
+        )
+    )
+
+    // You can add further validation and feedback here if needed.
+}
+
+@Composable
+fun SignUp(navController: NavController, modifier: Modifier = Modifier) {
+
+
 }

@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.baeguard.R
@@ -61,11 +62,10 @@ private val TAG = "BAE HOME"
 @Composable
 fun HomeScreen(
     navController: NavController,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel = hiltViewModel()
 ) {
 
     var dispositivos = remember{ mutableStateListOf<Dispositivo>() }
-//    var disp = homeViewModel.dispositivo.observeAsState()
 
     homeViewModel.getAllDispositivos()
     homeViewModel.alldispositivos.observe(LocalLifecycleOwner.current){ state ->
@@ -223,6 +223,7 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
 
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(colorResource(id = R.color.colorProfile), colorResource(id = R.color.colorProfile))
@@ -291,7 +292,9 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
                         // Exibir o nome da casa
                         Row() {
 
-                            AmbienteTitle(house!!, homeViewModel)
+                            if (house != null) {
+                                AmbienteTitle(house, homeViewModel)
+                            }
 
 
                             Spacer(modifier = Modifier.width(5.dp))

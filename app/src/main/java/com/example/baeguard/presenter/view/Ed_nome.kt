@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -45,11 +46,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.baeguard.R
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 
 @Composable
 fun EdNomeScreen(onBackPressed: () -> Unit = {}) {
+
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
     var currentPassword by remember { mutableStateOf("") }
     var newName by remember { mutableStateOf("") }
     var confirmName by remember { mutableStateOf("") }
@@ -143,7 +150,37 @@ fun EdNomeScreen(onBackPressed: () -> Unit = {}) {
             )
             Spacer(modifier = Modifier.height(80.dp))
             Button(
-                onClick = { },
+                onClick = {
+
+                    val user = auth.currentUser
+
+                    val credential = user?.email?.let { EmailAuthProvider.getCredential(it, currentPassword) }
+
+                    auth.signInWithCredential(credential!!)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful && newName == confirmName) {
+
+                                val profileUpdates = UserProfileChangeRequest.Builder()
+                                    .setDisplayName(newName)
+                                    .build()
+
+                                user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            showToast(context,"Nome alterado com sucesso")
+                                            onBackPressed
+                                        } else {
+                                            val error = task.exception?.message
+                                            showToast(context,"Erro: $error")
+                                        }
+                                    }
+                            } else {
+                                val error = task.exception?.message
+                                showToast(context,"Erro: $error")
+                            }
+                        }
+
+                },
                 shape = RoundedCornerShape(6.dp),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color(0xffe05950),

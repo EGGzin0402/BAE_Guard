@@ -1,5 +1,6 @@
 package com.example.baeguard.presenter.view
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,45 +8,37 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
-
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import com.example.baeguard.R
-
+import com.example.baeguard.data.model.UserData
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
@@ -58,49 +51,16 @@ import java.util.EnumMap
 
 
 @Composable
-fun Add_DispoScreen_Qr(onBackPressed: () -> Unit = {}) {
+fun Add_DispoScreen_Qr(
+    userData: UserData?,
+    nome: String,
+    ambiente: String,
+    onBackPressed: () -> Unit = {}
+) {
 
-    @Composable
-    fun QRCode(content: String) {
-        val context = LocalContext.current
-
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val hints = EnumMap<EncodeHintType, Any>(EncodeHintType::class.java)
-            hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
-
-            try {
-                val matrix: BitMatrix = MultiFormatWriter().encode(
-                    content,
-                    BarcodeFormat.QR_CODE,
-                    size.width.toInt(),
-                    size.height.toInt(),
-                    hints
-                )
-
-                val paint = Paint().apply {
-                    color = Color.Black
-                    style = PaintingStyle.Fill
-                }
-
-                for (y in 0 until matrix.height) {
-                    for (x in 0 until matrix.width) {
-                        if (matrix[x, y]) {
-                            drawRect(
-                                color = paint.color,
-                                topLeft = Offset(x.toFloat(), y.toFloat()),
-                                size = Size(1f, 1f)
-                            )
-                        }
-                    }
-                }
-            } catch (e: WriterException) {
-                e.printStackTrace()
-            }
-        }
-    }
+    val uid = userData?.userId
 
     LazyColumn(
-
         modifier = Modifier
             .background(colorResource(id = R.color.colorProfile))
             .fillMaxSize()
@@ -136,7 +96,8 @@ fun Add_DispoScreen_Qr(onBackPressed: () -> Unit = {}) {
                     .height(300.dp)
                     .width(300.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    QRCode(content = "Exemplo de um QR code - BAE Guard")
+                    QRCode(content = "$nome, $ambiente, $uid"
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp)) // Espaçamento entre o texto e a imagem
                 Text(
@@ -204,11 +165,41 @@ fun Add_DispoScreen_Qr(onBackPressed: () -> Unit = {}) {
     }
 }
 
-
-
-@Preview
 @Composable
-fun PreviewGreeting() {
-    val navController = rememberNavController() // Declare e inicialize a variável navController
-    Add_DispoScreen_Qr(navController::navigateUp)
+fun QRCode(content: String) {
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val hints = EnumMap<EncodeHintType, Any>(EncodeHintType::class.java)
+        hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
+
+        try {
+            val matrix: BitMatrix = MultiFormatWriter().encode(
+                content,
+                BarcodeFormat.QR_CODE,
+                size.width.toInt(),
+                size.height.toInt(),
+                hints
+            )
+
+            val paint = Paint().apply {
+                color = Color.Black
+                style = PaintingStyle.Fill
+            }
+
+            for (y in 0 until matrix.height) {
+                for (x in 0 until matrix.width) {
+                    if (matrix[x, y]) {
+                        drawRect(
+                            color = paint.color,
+                            topLeft = Offset(x.toFloat(), y.toFloat()),
+                            size = Size(1f, 1f)
+                        )
+                    }
+                }
+            }
+        } catch (e: WriterException) {
+            e.printStackTrace()
+        }
+    }
 }
+

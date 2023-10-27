@@ -40,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +52,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -62,120 +62,57 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.baeguard.R
-import com.example.baeguard.util.SignInState
+import com.example.baeguard.presenter.viewmodel.SignInViewModel
+import com.example.baeguard.util.GoogleSignInState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun tela_login(
-    state: SignInState,
-    onSignInClick: () -> Unit,
+    googleState: GoogleSignInState,
+    onGoogleSignInClick: () -> Unit,
     navController: NavController,
-    mainScreen: () -> Unit
+    mainScreen: () -> Unit,
+    signInViewModel: SignInViewModel = hiltViewModel()
 ) {
-    TextFieldWithIcons()
-    TextfieldSenha()
 
-    ChangeStatusBarColor(state, navController, mainScreen, onSignInClick)
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var email by remember { mutableStateOf("") }
+    var senha by remember { mutableStateOf("") }
+    val state by signInViewModel.signInState.collectAsStateWithLifecycle()
 
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TextFieldWithIcons() {
-    var value by remember { mutableStateOf("") }
-
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-            .clip(RoundedCornerShape(50.dp))
-            .background(Color(0xffe7e0cf))
-    ) {
-        TextField(
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            value = value,
-            onValueChange = { newText ->
-                value = newText
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "Email Icon",
-                    tint = Color.Black
-                )
-            },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Person Icon",
-                    tint = Color.Black
-                )
-            },
-            label = { Text(text = "E-mail", color = Color.Black) },
-            placeholder = { Text(text = "Digite seu e-mail", color = Color.Black) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.textFieldColors(
-                cursorColor = Color(0xFF1D1D1D),
-                textColor = Color(0xFF1D1D1D),
-                placeholderColor = Color(0xFF1D1D1D),
-                containerColor = Color(0xffe7e0cf)
-            )
-        )
+    if(state.isSuccess){
+        mainScreen()
     }
-}
+    LaunchedEffect(key1 = googleState.signInError ){
+        googleState.signInError?.let { error ->
+            Toast.makeText(
+                context,
+                error,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TextfieldSenha() {
-    var value by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
+    AndroidView(factory = { context ->
+        View(context).apply {
+            setBackgroundColor(0xffe05950.toInt())
+            val window = (context as Activity).window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = 0xffe05950.toInt()
+        }
+    }, update = { androidView ->
 
-    TextField(
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        value = value,
-        onValueChange = { newText ->
-            value = newText
-        },
-        label = { Text(text = "Senha", color = Color.Black) },
-        placeholder = { Text(text = "Digite sua senha", color = Color.Black) },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "Lock Icon",
-                tint = Color.Black
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = { showPassword = !showPassword }) {
-                Icon(
-                    painter = painterResource(id = if (showPassword) R.drawable.baseline_close_24  else R.drawable.baseline_remove_red_eye_24 ),
-                    tint = Color.Black,
-                    contentDescription = if (showPassword) "Hide Password" else "Show Password"
-                )
-            }
-        },
-        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(50.dp))
-            .background(Color(0xffe7e0cf)),
-        colors = TextFieldDefaults.textFieldColors(
-            cursorColor = Color.Black,
-            textColor = Color.Black,
-            placeholderColor = Color.Black,
-            containerColor = Color(color = 0xffe7e0cf)
-        )
-    )
-}
+    })
 
-@Composable
-fun Login(navController: NavController, mainScreen:() -> Unit, onSignInClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Spacer(modifier = Modifier.height(50.dp))
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .drawBehind {
                 val width = size.width
@@ -218,14 +155,20 @@ fun Login(navController: NavController, mainScreen:() -> Unit, onSignInClick: ()
                     .padding(bottom = 10.dp)
                     .padding(top = 40.dp)
             )
-            // Substituir o TextField existente pela função TextFieldWithIcons
-            TextFieldWithIcons()
+
+            TextFieldWithIcons { newValue ->
+                email = newValue
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            TextfieldSenha()
+            TextfieldSenha{ newValue ->
+                senha = newValue
+            }
 
             Button(
                 onClick = {
-                    mainScreen()
+                    scope.launch{
+                        signInViewModel.loginUser(email, senha)
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(Color(color = 0xFC000000)),
                 modifier = Modifier
@@ -286,7 +229,7 @@ fun Login(navController: NavController, mainScreen:() -> Unit, onSignInClick: ()
                     y = 620.dp
                 )
                 .size(size = 77.dp)
-                .clickable { onSignInClick() }
+                .clickable { onGoogleSignInClick() }
         )
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -303,49 +246,100 @@ fun Login(navController: NavController, mainScreen:() -> Unit, onSignInClick: ()
                         .padding(10.dp)
                 )
             }
-            // Call the content lambda function passed to CircleBox
-            content()
         }
 
 
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TextFieldWithIcons(onValueChanged: (String) -> Unit) {
+    var value by remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .padding(16.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(Color(0xffe7e0cf))
+    ) {
+        TextField(
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            value = value,
+            onValueChange = { newText ->
+                value = newText
+                onValueChanged(newText)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "Email Icon",
+                    tint = Color.Black
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Person Icon",
+                    tint = Color.Black
+                )
+            },
+            label = { Text(text = "E-mail", color = Color.Black) },
+            placeholder = { Text(text = "Digite seu e-mail", color = Color.Black) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = Color(0xFF1D1D1D),
+                textColor = Color(0xFF1D1D1D),
+                placeholderColor = Color(0xFF1D1D1D),
+                containerColor = Color(0xffe7e0cf)
+            )
+        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangeStatusBarColor(
-    state: SignInState,
-    navController: NavController,
-    mainScreen: () -> Unit,
-    onSignInClick: () -> Unit
-) {
-    val context = LocalContext.current
-    val view = LocalView.current
+fun TextfieldSenha(onValueChanged: (String) -> Unit) {
+    var value by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = state.signInError ){
-        state.signInError?.let { error ->
-            Toast.makeText(
-                context,
-                error,
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    AndroidView(factory = { context ->
-        View(context).apply {
-
-            setBackgroundColor(0xffe05950.toInt())
-
-
-            val window = (context as Activity).window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.statusBarColor = 0xffe05950.toInt()
-        }
-    }, update = { androidView ->
-
-    })
-
-    Login(navController, mainScreen, onSignInClick) {
-        Text(" ")
-    }
+    TextField(
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        value = value,
+        onValueChange = { newText ->
+            value = newText
+            onValueChanged(newText)
+        },
+        label = { Text(text = "Senha", color = Color.Black) },
+        placeholder = { Text(text = "Digite sua senha", color = Color.Black) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = "Lock Icon",
+                tint = Color.Black
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = { showPassword = !showPassword }) {
+                Icon(
+                    painter = painterResource(id = if (showPassword) R.drawable.baseline_close_24  else R.drawable.baseline_remove_red_eye_24 ),
+                    tint = Color.Black,
+                    contentDescription = if (showPassword) "Hide Password" else "Show Password"
+                )
+            }
+        },
+        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(Color(0xffe7e0cf)),
+        colors = TextFieldDefaults.textFieldColors(
+            cursorColor = Color.Black,
+            textColor = Color.Black,
+            placeholderColor = Color.Black,
+            containerColor = Color(color = 0xffe7e0cf)
+        )
+    )
 }

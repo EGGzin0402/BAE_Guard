@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.baeguard.data.model.Ambiente
 import com.example.baeguard.data.model.Dispositivo
+import com.example.baeguard.data.repository.GoogleAuthUiClient
 import com.example.baeguard.data.repository.Repository
 import com.example.baeguard.util.UiState
 import com.google.firebase.firestore.DocumentReference
@@ -16,7 +17,8 @@ val TAG = "BAE HOME VIEW MODEL"
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    val repository: Repository
+    val repository: Repository,
+    val googleAuthUiClient: GoogleAuthUiClient
 ): ViewModel() {
 
     //Dispositivo
@@ -27,16 +29,16 @@ class HomeViewModel @Inject constructor(
 
     fun getAllDispositivos(){
         _allDispositivos.value = UiState.Loading
-        repository.getAllDispositivos { _allDispositivos.value = it }
+        repository.getAllDispositivos(googleAuthUiClient.getSignedInUser()) { _allDispositivos.value = it }
     }
 
     private val _addDispositivo = MutableLiveData<UiState<String>>()
     val addDispostivo: LiveData<UiState<String>>
         get() = _addDispositivo
 
-    fun addDispositivo(dispositivo: Dispositivo){
+    fun addDispositivo() {
         _addDispositivo.value = UiState.Loading
-        repository.addDispositivo(dispositivo){ _addDispositivo.value = it }
+        repository.addDispositivo(googleAuthUiClient.getSignedInUser()){ _addDispositivo.value = it }
     }
 
 
@@ -50,7 +52,7 @@ class HomeViewModel @Inject constructor(
 
     fun getAmbiente(ambiente:DocumentReference){
         _ambiente.value = UiState.Loading
-        repository.getAmbiente(ambiente) { result ->
+        repository.getAmbiente(googleAuthUiClient.getSignedInUser(), ambiente) { result ->
             when (result) {
                 is UiState.Loading -> {
 

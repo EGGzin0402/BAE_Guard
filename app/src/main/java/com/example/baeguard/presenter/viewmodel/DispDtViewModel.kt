@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.baeguard.data.model.Ambiente
 import com.example.baeguard.data.model.Dispositivo
+import com.example.baeguard.data.repository.GoogleAuthUiClient
 import com.example.baeguard.data.repository.Repository
 import com.example.baeguard.util.UiState
 import com.google.firebase.firestore.DocumentReference
@@ -16,7 +17,8 @@ val TAG = "BAE DISP DT VIEW MODEL"
 
 @HiltViewModel
 class DispDtViewModel @Inject constructor(
-    val repository: Repository
+    val repository: Repository,
+    val googleAuthUiClient: GoogleAuthUiClient
 ): ViewModel() {
 
     //Dispositivo
@@ -27,7 +29,7 @@ class DispDtViewModel @Inject constructor(
 
     fun getDispositivo(dispositivo: String){
         _dispositivo.value = UiState.Loading
-        repository.getDispositivo(dispositivo) { _dispositivo.value = it }
+        repository.getDispositivo(googleAuthUiClient.getSignedInUser(), dispositivo) { _dispositivo.value = it }
     }
 
     private val _updateDispositivo = MutableLiveData<UiState<String>>()
@@ -36,7 +38,7 @@ class DispDtViewModel @Inject constructor(
 
     fun updateDispositivo(dispositivo: Dispositivo){
         _updateDispositivo.value = UiState.Loading
-        repository.updateDispositivo(dispositivo){ _updateDispositivo.value = it }
+        repository.updateDispositivo(googleAuthUiClient.getSignedInUser(), dispositivo){ _updateDispositivo.value = it }
     }
 
     private val _deleteDispositivo = MutableLiveData<UiState<String>>()
@@ -45,7 +47,7 @@ class DispDtViewModel @Inject constructor(
 
     fun deleteDispositivo(dispositivo: Dispositivo){
         _deleteDispositivo.value = UiState.Loading
-        repository.deleteDispositivo(dispositivo){ _deleteDispositivo.value = it }
+        repository.deleteDispositivo(googleAuthUiClient.getSignedInUser(), dispositivo){ _deleteDispositivo.value = it }
     }
 
     //Ambientes
@@ -56,7 +58,7 @@ class DispDtViewModel @Inject constructor(
 
     fun getAllAmbientes(){
         _allAmbientes.value = UiState.Loading
-        repository.getAllAmbiente{ _allAmbientes.value = it }
+        repository.getAllAmbiente(googleAuthUiClient.getSignedInUser()){ _allAmbientes.value = it }
     }
 
     private val _ambiente = MutableLiveData<UiState<Ambiente>>()
@@ -65,7 +67,7 @@ class DispDtViewModel @Inject constructor(
 
     fun getAmbiente(ambiente: DocumentReference){
         _ambiente.value = UiState.Loading
-        repository.getAmbiente(ambiente) { result ->
+        repository.getAmbiente(googleAuthUiClient.getSignedInUser(), ambiente) { result ->
             when (result) {
                 is UiState.Loading -> {
 
@@ -86,7 +88,7 @@ class DispDtViewModel @Inject constructor(
 
     fun addAmbiente(ambiente: Ambiente): String{
         _addAmbiente.value = UiState.Loading
-        return repository.addAmbiente(ambiente){ _addAmbiente.value = it }
+        return repository.addAmbiente(googleAuthUiClient.getSignedInUser(), ambiente){ _addAmbiente.value = it }
     }
 
 }

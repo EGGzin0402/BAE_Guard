@@ -15,12 +15,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.baeguard.presenter.singin.GoogleAuthUiClient
+import com.example.baeguard.data.repository.GoogleAuthUiClient
 import com.example.baeguard.presenter.view.tela_cadastro
 import com.example.baeguard.presenter.view.tela_login
 import com.example.baeguard.presenter.viewmodel.SignInViewModel
 import com.example.baeguard.ui.theme.BaeguardTheme
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
+            database = FirebaseFirestore.getInstance(),
             context = applicationContext,
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
@@ -67,7 +69,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                         signInViewModel.onSignInResult(signInResult)
 
-                                        // Redirecione para MainScreenActivity após o login bem-sucedido
+                                        // Redireciona para MainScreenActivity após o login bem-sucedido
                                         var nav = Intent(this@MainActivity, MainScreenActivity::class.java)
                                         startActivity(nav)
                                     }
@@ -76,8 +78,8 @@ class MainActivity : ComponentActivity() {
                         )
 
                         tela_login(
-                            state = state,
-                            onSignInClick = {
+                            googleState = state,
+                            onGoogleSignInClick = {
                                 lifecycleScope.launch {
                                     val signInIntentSender = googleAuthUiClient.signIn()
                                     launcher.launch(
@@ -98,7 +100,10 @@ class MainActivity : ComponentActivity() {
                     composable(
                         route = "tela_cadastro"
                     ){
-                        tela_cadastro(navController)
+                        tela_cadastro(navController, {
+                            var nav = Intent(this@MainActivity, MainScreenActivity::class.java)
+                            startActivity(nav)
+                        })
                     }
 
                 }

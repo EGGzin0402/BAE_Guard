@@ -47,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,13 +56,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.baeguard.R
-import com.example.baeguard.presenter.singin.UserData
+import com.example.baeguard.data.model.UserData
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 
 @ExperimentalMaterial3Api
 @Composable
 fun PerfilScreen(
     userData: UserData?,
+    auth: FirebaseAuth = FirebaseAuth.getInstance(),
     onSignOut: () -> Unit,
     navController: NavController
 ) {
@@ -125,149 +128,224 @@ fun PerfilScreen(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (userData?.username != null){
-                                Text(
-                                    text = userData.username,
-                                    color = Color(0xFFFFFFFF),
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }else{
-                                Text(
-                                    text = "Nome do Cliente",
-                                    color = Color(0xFFFFFFFF),
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "cliente@exemplo.com",
-                                    color = Color(0xFFFFFFFF),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Normal
-                                )
+
+                            val user = auth.currentUser
+
+                            if (user != null) {
+                                val providerData = user.providerData
+                                for (userInfo in providerData) {
+                                    when (userInfo.providerId) {
+                                        GoogleAuthProvider.PROVIDER_ID -> {
+                                            if (userData?.username != null){
+                                                Text(
+                                                    text = userData.username,
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 24.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }else{
+                                                Text(
+                                                    text = "Nome do Cliente",
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 24.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            if (userData?.email != null){
+                                                Text(
+                                                    text = userData.email,
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            }else{
+                                                Text(
+                                                    text = "cliente@exemplo.com",
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            }
+
+                                            Card(
+                                                shape = RoundedCornerShape(6.dp),
+                                                colors = CardDefaults.cardColors(
+                                                    containerColor = Color.Transparent
+                                                ),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { showDialog.value = true }
+                                                    .padding(16.dp)
+                                                    .height(40.dp)
+
+
+                                            ) {
+
+                                                RowWithIcon(label = "Deletar Conta", icon = Icons.Default.Delete)
+                                                Divider(
+                                                    color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+                                                    modifier = Modifier
+                                                        .align(alignment = Alignment.Start)
+
+                                                )
+                                                ConfirmationDialog(
+                                                    showDialog = showDialog.value,
+                                                    onConfirm = { /* Lógica para excluir a conta */ },
+                                                    onCancel = { showDialog.value = false }
+                                                )
+                                            }
+
+                                        }
+
+
+
+                                        EmailAuthProvider.PROVIDER_ID -> {
+                                            if (userData?.username != null){
+                                                Text(
+                                                    text = userData.username,
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 24.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }else{
+                                                Text(
+                                                    text = "B.A.E. Profile",
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 24.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            if (userData?.email != null){
+                                                Text(
+                                                    text = userData.email,
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            }else{
+                                                Text(
+                                                    text = "cliente@exemplo.com",
+                                                    color = Color(0xFFFFFFFF),
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Column{
+                                                Card(
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = Color.Transparent
+                                                    ),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable { navController.navigate("ed_senha") }
+                                                        .padding(16.dp)
+                                                        .height(40.dp)
+
+
+                                                ) {
+                                                    RowWithIcon(label = "Editar Senha", icon = Icons.Default.KeyboardArrowRight)
+                                                    Divider(
+                                                        color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+                                                        modifier = Modifier
+                                                            .align(alignment = Alignment.Start)
+                                                            .fillMaxWidth()
+                                                    )
+                                                }
+
+                                                Spacer(modifier = Modifier.height(16.dp))
+
+
+                                                Card(
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = Color.Transparent
+                                                    ),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable { navController.navigate("ed_email") }
+                                                        .padding(16.dp)
+                                                        .height(40.dp)
+
+                                                ) {
+                                                    RowWithIcon(label = "Editar Email", icon = Icons.Default.KeyboardArrowRight)
+                                                    Divider(
+                                                        color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+                                                        modifier = Modifier
+                                                            .align(alignment = Alignment.Start)
+                                                            .fillMaxWidth()
+                                                    )
+                                                }
+
+                                                Spacer(modifier = Modifier.height(16.dp))
+
+                                                Card(
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = Color.Transparent
+                                                    ),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable { navController.navigate("ed_nome") }
+                                                        .padding(16.dp)
+                                                        .height(40.dp)
+
+                                                ) {
+                                                    RowWithIcon(label = "Editar Nome", icon = Icons.Default.KeyboardArrowRight)
+                                                    Divider(
+                                                        color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+                                                        modifier = Modifier
+                                                            .align(alignment = Alignment.Start)
+                                                            .fillMaxWidth()
+                                                    )
+                                                }
+                                            }
+
+                                            Spacer(modifier = Modifier.height(16.dp))
+
+                                            Card(
+                                                shape = RoundedCornerShape(6.dp),
+                                                colors = CardDefaults.cardColors(
+                                                    containerColor = Color.Transparent
+                                                ),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { showDialog.value = true }
+                                                    .padding(16.dp)
+                                                    .height(40.dp)
+
+
+                                            ) {
+
+                                                RowWithIcon(label = "Deletar Conta", icon = Icons.Default.Delete)
+                                                Divider(
+                                                    color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+                                                    modifier = Modifier
+                                                        .align(alignment = Alignment.Start)
+
+                                                )
+                                                ConfirmationDialog(
+                                                    showDialog = showDialog.value,
+                                                    onConfirm = { /* Lógica para excluir a conta */ },
+                                                    onCancel = { showDialog.value = false }
+                                                )
+
+
+
+
+                                            }
+                                        }
+                                    }
+                                }
                             }
+
+
                         }
                     }
 
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(
-                        /*   modifier = Modifier
-                               .border(
-                                   border = BorderStroke(2.dp, Color(color = 0xffe7e0cf)),
-                                   shape = RoundedCornerShape(6.dp)
-                               )
-                               .background(
-                               shape = RoundedCornerShape(6.dp),
-                               brush = Brush.verticalGradient(
-                                   colors = listOf(Color(color = 0xffe7e0cf), Color(color = 0xffe7e0cf)
-                                   )
-                               ))
-                      */ ){
-                        Card(
-                            shape = RoundedCornerShape(6.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.Transparent
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { navController.navigate("ed_senha") }
-                                .padding(16.dp)
-                                .height(40.dp)
 
-
-                        ) {
-                            RowWithIcon(label = "Editar Senha", icon = Icons.Default.KeyboardArrowRight)
-                            Divider(
-                                color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
-                                modifier = Modifier
-                                    .align(alignment = Alignment.Start)
-                                    .fillMaxWidth()
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-
-                        Card(
-                            shape = RoundedCornerShape(6.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.Transparent
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { navController.navigate("ed_email") }
-                                .padding(16.dp)
-                                .height(40.dp)
-
-                        ) {
-                            RowWithIcon(label = "Editar Email", icon = Icons.Default.KeyboardArrowRight)
-                            Divider(
-                                color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
-                                modifier = Modifier
-                                    .align(alignment = Alignment.Start)
-                                    .fillMaxWidth()
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Card(
-                            shape = RoundedCornerShape(6.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.Transparent
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { navController.navigate("ed_nome") }
-                                .padding(16.dp)
-                                .height(40.dp)
-
-                        ) {
-                            RowWithIcon(label = "Editar Nome", icon = Icons.Default.KeyboardArrowRight)
-                            Divider(
-                                color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
-                                modifier = Modifier
-                                    .align(alignment = Alignment.Start)
-                                    .fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Card(
-                        shape = RoundedCornerShape(6.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Transparent
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showDialog.value = true }
-                            .padding(16.dp)
-                            .height(40.dp)
-
-
-                    )
-                    {
-
-                        RowWithIcon(label = "Deletar Conta", icon = Icons.Default.Delete)
-                        Divider(
-                            color = Color(0xFFFFFFFF).copy(alpha = 0.5f),
-                            modifier = Modifier
-                                .align(alignment = Alignment.Start)
-
-                        )
-                        ConfirmationDialog(
-                            showDialog = showDialog.value,
-                            onConfirm = { /* Lógica para excluir a conta */ },
-                            onCancel = { showDialog.value = false }
-                        )
-
-
-
-
-                    }
                 }
             }
         }
@@ -294,7 +372,6 @@ fun ConfirmationDialog(
     onCancel: () -> Unit
 ) {
     if (showDialog) {
-        val context = LocalContext.current
         AlertDialog(
 
             modifier = Modifier

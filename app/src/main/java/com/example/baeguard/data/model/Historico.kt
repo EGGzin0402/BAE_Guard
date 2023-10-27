@@ -4,6 +4,7 @@ import com.google.firebase.firestore.ServerTimestamp
 import java.util.Date
 
 data class Historico(
+    var id: String = "",
     var CO2: Boolean = false,
     var GLP: Boolean = false,
     var temperatura: Int = 0,

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
@@ -34,7 +33,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.baeguard.presenter.singin.GoogleAuthUiClient
+import com.example.baeguard.data.repository.GoogleAuthUiClient
 import com.example.baeguard.presenter.view.Add_DispoScreen
 import com.example.baeguard.presenter.view.Add_DispoScreen_Qr
 import com.example.baeguard.presenter.view.Disp_DtScreen
@@ -44,10 +43,9 @@ import com.example.baeguard.presenter.view.EdSenhaScreen
 import com.example.baeguard.presenter.view.HistoricoScreen
 import com.example.baeguard.presenter.view.HomeScreen
 import com.example.baeguard.presenter.view.PerfilScreen
-import com.example.baeguard.presenter.viewmodel.DispDtViewModel
 import com.example.baeguard.ui.theme.BaeguardTheme
-import com.example.baeguard.viewmodel.HomeViewModel
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -56,13 +54,11 @@ class MainScreenActivity : ComponentActivity() {
 
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
+            database = FirebaseFirestore.getInstance(),
             context = applicationContext,
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
     }
-
-    private val homeViewModel by viewModels<HomeViewModel>()
-    private val dispDtViewModel by viewModels<DispDtViewModel>()
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,7 +87,7 @@ class MainScreenActivity : ComponentActivity() {
                                 NavHost(navController, startDestination = NavigationItem.Home.route) {
                                     composable(NavigationItem.Home.route) {
                                         onRouteChanged(NavigationItem.Home.route)
-                                        HomeScreen(navController, homeViewModel)
+                                        HomeScreen(navController)
                                     }
                                     composable(NavigationItem.Perfil.route) {
                                         onRouteChanged(NavigationItem.Perfil.route)
@@ -137,15 +133,22 @@ class MainScreenActivity : ComponentActivity() {
                                         onRouteChanged(NavigationItem.Add_dispositivo.route)
                                         Add_DispoScreen(navController)
                                     }
-                                    composable(NavigationItem.Add_Qr.route) {
-                                        onRouteChanged(NavigationItem.Add_Qr.route)
-                                        Add_DispoScreen_Qr(navController::navigateUp)
+                                    composable(NavigationItem.Add_Qr("{nome}", "{ambiente}").route) {
+                                        val nome = it.arguments?.getString("nome")
+                                        val ambiente = it.arguments?.getString("ambiente")
+                                        onRouteChanged(NavigationItem.Add_Qr(nome!!, ambiente!!).route)
+                                        Add_DispoScreen_Qr(
+                                            userData = googleAuthUiClient.getSignedInUser(),
+                                            nome = nome,
+                                            ambiente= ambiente,
+                                            onBackPressed = navController::navigateUp
+                                        )
                                     }
 
                                     composable(NavigationItem.Disp_Dt("{deviceId}").route) {
                                         val deviceId = it.arguments?.getString("deviceId")
                                         onRouteChanged(NavigationItem.Disp_Dt(deviceId!!).route)
-                                        Disp_DtScreen(deviceId!!, dispDtViewModel, navController)
+                                        Disp_DtScreen(googleAuthUiClient.getSignedInUser(), deviceId, navController)
                                     }
                                 }
                             }
@@ -160,7 +163,6 @@ class MainScreenActivity : ComponentActivity() {
 @Composable
 fun currentRoute(navController: NavController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-
     return navBackStackEntry?.destination?.route
 }
 
@@ -173,8 +175,8 @@ fun getTopBarTitle(route: String?): String {
         NavigationItem.Ed_email.route -> "Editar Email"
         NavigationItem.Ed_Nome.route -> "Editar Nome"
         NavigationItem.Add_dispositivo.route -> "Adicionar Dispositivo"
-        NavigationItem.Add_Qr.route -> "Escanear QR Code"
-        "disp_dt" -> "Detalhes do Dispositivo"
+        NavigationItem.Add_Qr("{nome}", "{ambiente}").route -> "Escanear QR Code"
+        NavigationItem.Disp_Dt("{deviceId}").route -> "Detalhes do Dispositivo"
         else -> "B. A. E. Guard"
     }
 }
@@ -250,5 +252,4 @@ fun BottomNavigationBar(navController: NavController) {
             )
         }
     }
-
 }

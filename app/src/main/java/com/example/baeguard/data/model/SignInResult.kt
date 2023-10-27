@@ -1,4 +1,4 @@
-package com.example.baeguard.presenter.singin
+package com.example.baeguard.data.model
 
 data class SignInResult(
     val data: UserData?,
@@ -8,5 +8,6 @@ data class SignInResult(
 data class UserData(
     val userId: String,
     val username: String?,
-    val profilePictureUrl: String?
+    val profilePictureUrl: String?,
+    val email: String?
 )

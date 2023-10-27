@@ -1,49 +1,48 @@
 package com.example.baeguard.presenter.view
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
-import com.example.baeguard.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.compose.ui.unit.sp
+import com.example.baeguard.R
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun EdSenhaScreen(onBackPressed: () -> Unit = {}){
+fun EdSenhaScreen(
+    onBackPressed: () -> Unit = {}
+){
+
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+    val context = LocalContext.current
 
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -170,7 +169,32 @@ fun EdSenhaScreen(onBackPressed: () -> Unit = {}){
 
             Spacer(modifier = Modifier.height(80.dp))
             Button(
-                onClick = { },
+                onClick = {
+
+                    val user = auth.currentUser
+
+                    val credential = user?.email?.let { EmailAuthProvider.getCredential(it, currentPassword) }
+
+                    auth.signInWithCredential(credential!!)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful && newPassword == confirmPassword) {
+                                user.updatePassword(newPassword)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            showToast(context,"Senha alterada com sucesso")
+                                            onBackPressed
+                                        } else {
+                                            val error = task.exception?.message
+                                            showToast(context,"Erro: $error")
+                                        }
+                                    }
+                            } else {
+                                val error = task.exception?.message
+                                showToast(context,"Erro: $error")
+                            }
+                        }
+
+                },
                 shape = RoundedCornerShape(6.dp),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color(0xffe05950),
@@ -254,6 +278,11 @@ fun EdSenhaScreen(onBackPressed: () -> Unit = {}){
 
         }
     }
+
+}
+
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
 

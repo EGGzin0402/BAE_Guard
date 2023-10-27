@@ -72,10 +72,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.baeguard.R
 import com.example.baeguard.data.model.Ambiente
 import com.example.baeguard.data.model.Dispositivo
+import com.example.baeguard.data.model.UserData
 import com.example.baeguard.presenter.viewmodel.DispDtViewModel
 import com.example.baeguard.util.FirestoreTables
 import com.example.baeguard.util.UiState
@@ -86,9 +88,10 @@ private val TAG = "BAE DISP DT"
 
 @Composable
 fun Disp_DtScreen(
+    userData: UserData?,
     dispId:String,
-    dispDtViewModel: DispDtViewModel,
-    navController: NavController
+    navController: NavController,
+    dispDtViewModel: DispDtViewModel = hiltViewModel()
 ) {
     var dispositivo by remember { mutableStateOf(Dispositivo()) }
 
@@ -219,7 +222,7 @@ fun Disp_DtScreen(
                                             URLcam = dispositivo.URLcam,
                                             temperatura = dispositivo.temperatura,
                                             umidade = dispositivo.umidade,
-                                            ambiente = FirebaseFirestore.getInstance().collection(
+                                            ambiente = FirebaseFirestore.getInstance().collection(FirestoreTables.USUARIO).document(userData!!.userId).collection(
                                                 FirestoreTables.AMBIENTE).document(ambid)
                                         )
                                     )
@@ -233,7 +236,7 @@ fun Disp_DtScreen(
                                             URLcam = dispositivo.URLcam,
                                             temperatura = dispositivo.temperatura,
                                             umidade = dispositivo.umidade,
-                                            ambiente = FirebaseFirestore.getInstance().collection(
+                                            ambiente = FirebaseFirestore.getInstance().collection(FirestoreTables.USUARIO).document(userData!!.userId).collection(
                                                 FirestoreTables.AMBIENTE).document(environment.id)
                                         )
                                     )
@@ -295,6 +298,8 @@ fun Disp_DtScreen(
                         AcionarBombeiros()
                     }else if(dispositivo.GLP){
                         AcionarBombeiros()
+                    }else if(dispositivo.chama){
+                        AcionarBombeiros()
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -313,6 +318,8 @@ fun Disp_DtScreen(
                         "CO2 detectado!"
                     }else if(dispositivo.GLP){
                         "GLP detectado!"
+                    }else if(dispositivo.chama){
+                        "Chama detectada!"
                     }else{
                         "Tudo Certo!"
                     }
@@ -521,7 +528,6 @@ fun EditarDispositivo(
                                             onClick = {
                                                 environment.id = item.id
                                                 environment.nome = item.nome
-                                                environment.usuario = item.usuario
                                                 isDropdownExpanded = false
                                             }
                                         ) {

@@ -1,19 +1,27 @@
-package com.example.baeguard.presenter.singin
+package com.example.baeguard.data.repository
 
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.util.Log
 import com.example.baeguard.R
+import com.example.baeguard.data.model.SignInResult
+import com.example.baeguard.data.model.UserData
+import com.example.baeguard.util.FirestoreTables
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
+private val TAG = "BAE GOOGLE AUTH"
+
 class GoogleAuthUiClient(
+    private val database: FirebaseFirestore,
     private val context: Context,
     private val oneTapClient: SignInClient
 ) {
@@ -38,14 +46,43 @@ class GoogleAuthUiClient(
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
+
+        val user = auth.signInWithCredential(googleCredentials).await().user
+
+
         return try {
             val user = auth.signInWithCredential(googleCredentials).await().user
+            database.collection(FirestoreTables.USUARIO).document(user!!.uid).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                    } else {
+                        val document = database.document(FirestoreTables.USUARIO+"/"+user.uid)
+                        user?.run {
+                            UserData(
+                                userId = uid,
+                                username = displayName,
+                                profilePictureUrl = photoUrl?.toString(),
+                                email = email
+                            )
+                        }?.let {
+                            document
+                                .set(
+                                    it
+                                ).addOnSuccessListener {
+                                    Log.i(TAG, "Usuario criado com sucesso")
+                                }.addOnFailureListener{
+                                    Log.e(TAG, it.localizedMessage!!)
+                                }
+                        }
+                    }
+                }
             SignInResult(
                 data = user?.run {
                     UserData(
                         userId = uid,
                         username = displayName,
-                        profilePictureUrl = photoUrl?.toString()
+                        profilePictureUrl = photoUrl?.toString(),
+                        email = email
                     )
                 },
                 errorMessage = null
@@ -76,7 +113,8 @@ class GoogleAuthUiClient(
         UserData(
             userId = uid,
             username = displayName,
-            profilePictureUrl = photoUrl?.toString()
+            profilePictureUrl = photoUrl?.toString(),
+            email = email
         )
     }
 

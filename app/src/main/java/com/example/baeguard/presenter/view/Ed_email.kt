@@ -38,19 +38,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.baeguard.R
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun EdEmailScreen(onBackPressed: () -> Unit = {}) {
+
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
     var currentPassword by remember { mutableStateOf("") }
     var newEmail by remember { mutableStateOf("") }
     var confirmEmail by remember { mutableStateOf("") }
@@ -142,7 +147,32 @@ fun EdEmailScreen(onBackPressed: () -> Unit = {}) {
             )
             Spacer(modifier = Modifier.height(80.dp))
             Button(
-                onClick = { },
+                onClick = {
+
+                    val user = auth.currentUser
+
+                    val credential = user?.email?.let { EmailAuthProvider.getCredential(it, currentPassword) }
+
+                    auth.signInWithCredential(credential!!)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful && newEmail == confirmEmail) {
+                                user.updateEmail(newEmail)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            showToast(context,"Email alterado com sucesso")
+                                            onBackPressed
+                                        } else {
+                                            val error = task.exception?.message
+                                            showToast(context,"Erro: $error")
+                                        }
+                                    }
+                            } else {
+                                val error = task.exception?.message
+                                showToast(context,"Erro: $error")
+                            }
+                        }
+
+                },
                 shape = RoundedCornerShape(6.dp),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color(0xffe05950),
