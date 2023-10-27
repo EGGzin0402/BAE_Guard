@@ -47,9 +47,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.baeguard.R
+import com.example.baeguard.data.model.UserData
+import com.example.baeguard.util.FirestoreTables
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun EdNomeScreen(onBackPressed: () -> Unit = {}) {
@@ -155,6 +158,16 @@ fun EdNomeScreen(onBackPressed: () -> Unit = {}) {
                     val user = auth.currentUser
 
                     val credential = user?.email?.let { EmailAuthProvider.getCredential(it, currentPassword) }
+
+                    if (user != null) {
+                        FirebaseFirestore.getInstance().document(FirestoreTables.USUARIO+"/"+ user.uid)
+                            .set(UserData(
+                                userId = user.uid,
+                                username = newName,
+                                email = user.email,
+                                profilePictureUrl = user.photoUrl.toString()
+                            ))
+                    }
 
                     auth.signInWithCredential(credential!!)
                         .addOnCompleteListener { task ->

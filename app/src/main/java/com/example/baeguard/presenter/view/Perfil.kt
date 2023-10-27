@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,21 +58,24 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.baeguard.R
 import com.example.baeguard.data.model.UserData
+import com.example.baeguard.util.FirestoreTables
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 @ExperimentalMaterial3Api
 @Composable
 fun PerfilScreen(
     userData: UserData?,
-    auth: FirebaseAuth = FirebaseAuth.getInstance(),
     onSignOut: () -> Unit,
+    onDelete: () -> Unit,
     navController: NavController
 ) {
 
-
+    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
     val showDialog = remember { mutableStateOf(false) }
     Box(
@@ -327,7 +331,18 @@ fun PerfilScreen(
                                                 )
                                                 ConfirmationDialog(
                                                     showDialog = showDialog.value,
-                                                    onConfirm = { /* Lógica para excluir a conta */ },
+                                                    onConfirm = {
+                                                        FirebaseFirestore.getInstance().collection(FirestoreTables.USUARIO).document(user.uid).delete()
+                                                        user.delete()
+                                                            .addOnCompleteListener { task ->
+                                                                if (task.isSuccessful) {
+                                                                    onDelete()
+                                                                } else {
+                                                                    val error = task.exception?.message
+                                                                    showToast(context,"Erro: $error")
+                                                                }
+                                                            }
+                                                                },
                                                     onCancel = { showDialog.value = false }
                                                 )
 

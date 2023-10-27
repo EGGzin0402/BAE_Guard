@@ -46,21 +46,21 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val user = firebaseAuth.createUserWithEmailAndPassword(email, password).await().user
             val document = database.document(FirestoreTables.USUARIO+"/"+user!!.uid)
-            user?.run {
+            user.run {
                 UserData(
                     userId = uid,
                     username = displayName,
                     profilePictureUrl = photoUrl?.toString(),
                     email = email
                 )
-            }?.let {
+            }.let {
                 document
                     .set(
                         it
                     )
             }
             SignInResult(
-                data = user?.run {
+                data = user.run {
                     UserData(
                         userId = uid,
                         username = displayName,

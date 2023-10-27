@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +44,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,7 +59,7 @@ import com.example.baeguard.util.UiState
 import com.example.baeguard.viewmodel.HomeViewModel
 import com.google.firebase.firestore.DocumentReference
 
-private val TAG = "BAE HOME"
+private const val TAG = "BAE HOME"
 
 @Composable
 fun HomeScreen(
@@ -65,7 +67,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
 
-    var dispositivos = remember{ mutableStateListOf<Dispositivo>() }
+    val dispositivos = remember{ mutableStateListOf<Dispositivo>() }
 
     homeViewModel.getAllDispositivos()
     homeViewModel.alldispositivos.observe(LocalLifecycleOwner.current){ state ->
@@ -161,7 +163,7 @@ fun StatusCard(navController: NavController,id: String, status: String, temperat
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "$environment",
+                            text = environment,
                             style = MaterialTheme.typography.body1,
                             color = Color.Gray
                         )
@@ -169,7 +171,7 @@ fun StatusCard(navController: NavController,id: String, status: String, temperat
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(10.dp), horizontalArrangement = Arrangement.Center){
                     Text(
-                        text = "$status",
+                        text = status,
                         style = MaterialTheme.typography.h6,
                         color = Color.Black
                     )
@@ -233,21 +235,17 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
 
         LazyColumn {
             item{
-                /*  Box ( modifier = Modifier
+                  Box ( modifier = Modifier
                       .wrapContentSize(align = Alignment.Center)
                       .fillMaxWidth()
-
-                      .border(
-                          border = BorderStroke(2.dp, Color(0xffe05950)),
-
-                          )) {
+                  ) {
 
                       Column {
 
 
                       Text(
                           text = "Bem vindo ao",
-                          color = Color(0xffdf5950),
+                          color = Color(0xffe7e0cf),
                           textAlign = TextAlign.Center,
                           style = TextStyle(
                               fontSize = 30.sp
@@ -258,7 +256,7 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
 
                       Text(
                           text = "BAE Guard",
-                          color = Color(0xffdf5950),
+                          color = Color(0xffe7e0cf),
                           textAlign = TextAlign.Center,
                           style = TextStyle(
                               fontSize = 50.sp, fontWeight = FontWeight.Bold
@@ -270,7 +268,7 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
 
                       Text(
                           text = "Seus dispositivos",
-                          color = Color(0xffdf5950),
+                          color = Color(0xffe7e0cf),
                           textAlign = TextAlign.Center,
                           style = TextStyle(
                               fontSize = 26.sp
@@ -281,7 +279,7 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
                       )
                           Spacer(modifier = Modifier.height(10.dp))
                       }
-                  }*/
+                  }
             }
             groupedStatus.forEach { (house, dispositivos) ->
                 item {
@@ -314,13 +312,15 @@ fun StatusCardList(navController: NavController, homeViewModel: HomeViewModel, d
                 items(dispositivos) { dispositivo ->
 
 
-                    var status:String
-                    if (dispositivo.CO2){
-                        status = "CO2 detectado!"
+                    val status:String
+                    status = if (dispositivo.CO2){
+                        "CO2 detectado!"
                     }else if(dispositivo.GLP){
-                        status = "GLP detectado!"
+                        "GLP detectado!"
+                    }else if(dispositivo.chama){
+                        "Chama detectada!"
                     }else{
-                        status = "Tudo certo!"
+                        "Tudo certo!"
                     }
 
                     StatusCard(

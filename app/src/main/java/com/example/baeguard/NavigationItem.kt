@@ -8,6 +8,6 @@ sealed class NavigationItem(var route: String, var icon: Int, var title: String)
     object Ed_email : NavigationItem("ed_email", R.drawable.baseline_edemail_24, "Ed_email")
     object Ed_Nome : NavigationItem("ed_nome", R.drawable.baseline_ednome_24, "Ed_Nome")
     object Add_dispositivo : NavigationItem("add_dispo", R.drawable.baseline_adddisp_24, "Add_dispositivo")
-    data class Add_Qr(val nome:String, val ambiente: String) : NavigationItem("add_qr/{nome}/{ambiente}", R.drawable.baseline_addqr_24, "Add_Qr")
+    data class Add_Qr(val infoQR:String) : NavigationItem("add_qr/{infoQR}", R.drawable.baseline_addqr_24, "Add_Qr")
     data class Disp_Dt(val devideId:String) : NavigationItem("disp_dt/{deviceId}", R.drawable.baseline_disp_dt_24, "Disp_Dt")
 }

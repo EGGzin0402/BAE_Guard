@@ -53,8 +53,7 @@ import java.util.EnumMap
 @Composable
 fun Add_DispoScreen_Qr(
     userData: UserData?,
-    nome: String,
-    ambiente: String,
+    infoQR: String,
     onBackPressed: () -> Unit = {}
 ) {
 
@@ -96,7 +95,7 @@ fun Add_DispoScreen_Qr(
                     .height(300.dp)
                     .width(300.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    QRCode(content = "$nome, $ambiente, $uid"
+                    QRCode(content = "$infoQR, $uid"
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp)) // Espaçamento entre o texto e a imagem

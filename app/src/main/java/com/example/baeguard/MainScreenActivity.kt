@@ -104,11 +104,15 @@ class MainScreenActivity : ComponentActivity() {
                                                         Toast.LENGTH_LONG
                                                     ).show()
 
-                                                    var nav = Intent(this@MainScreenActivity, MainActivity::class.java)
+                                                    val nav = Intent(this@MainScreenActivity, MainActivity::class.java)
                                                     startActivity(nav)
 
                                                 }
 
+                                            },
+                                            onDelete = {
+                                                val nav = Intent(this@MainScreenActivity, MainActivity::class.java)
+                                                startActivity(nav)
                                             }
                                         )
                                     }
@@ -133,14 +137,12 @@ class MainScreenActivity : ComponentActivity() {
                                         onRouteChanged(NavigationItem.Add_dispositivo.route)
                                         Add_DispoScreen(navController)
                                     }
-                                    composable(NavigationItem.Add_Qr("{nome}", "{ambiente}").route) {
-                                        val nome = it.arguments?.getString("nome")
-                                        val ambiente = it.arguments?.getString("ambiente")
-                                        onRouteChanged(NavigationItem.Add_Qr(nome!!, ambiente!!).route)
+                                    composable(NavigationItem.Add_Qr("{infoQR}").route) {
+                                        val infoQR = it.arguments?.getString("infoQR")
+                                        onRouteChanged(NavigationItem.Add_Qr(infoQR!!).route)
                                         Add_DispoScreen_Qr(
                                             userData = googleAuthUiClient.getSignedInUser(),
-                                            nome = nome,
-                                            ambiente= ambiente,
+                                            infoQR = infoQR,
                                             onBackPressed = navController::navigateUp
                                         )
                                     }
@@ -175,7 +177,7 @@ fun getTopBarTitle(route: String?): String {
         NavigationItem.Ed_email.route -> "Editar Email"
         NavigationItem.Ed_Nome.route -> "Editar Nome"
         NavigationItem.Add_dispositivo.route -> "Adicionar Dispositivo"
-        NavigationItem.Add_Qr("{nome}", "{ambiente}").route -> "Escanear QR Code"
+        NavigationItem.Add_Qr("{infoQR}").route -> "Escanear QR Code"
         NavigationItem.Disp_Dt("{deviceId}").route -> "Detalhes do Dispositivo"
         else -> "B. A. E. Guard"
     }

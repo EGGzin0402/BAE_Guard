@@ -72,6 +72,8 @@ fun Add_DispoScreen(
 
     var deviceName by remember { mutableStateOf("") }
     var environmentName by remember { mutableStateOf("") }
+    var wifiSSID by remember { mutableStateOf("") }
+    var wifiSenha by remember { mutableStateOf("") }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var isNewEnvironment by remember { mutableStateOf(false) } // Checkbox state
 
@@ -147,8 +149,6 @@ fun Add_DispoScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-
-                // Either show the dropdown or the text field based on the checkbox
                 if (isNewEnvironment) {
                     OutlinedTextField(
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -239,6 +239,7 @@ fun Add_DispoScreen(
                     }
 
                 }
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -259,6 +260,49 @@ fun Add_DispoScreen(
                         style = LocalTextStyle.current.copy(fontSize = 14.sp)
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xffffe98a),
+                        unfocusedBorderColor = Color.White,
+                        focusedLabelColor = Color.White,
+                        cursorColor = Color.White
+                    ),
+                    value = wifiSSID,
+                    onValueChange = { wifiSSID = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(color = Color.White),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    placeholder = {
+                        Text(text = "Nome da rede Wifi do dispositivo", color = Color(0xFFFFFDFD))
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xffffe98a),
+                        unfocusedBorderColor = Color.White,
+                        focusedLabelColor = Color.White,
+                        cursorColor = Color.White
+                    ),
+                    value = wifiSenha,
+                    onValueChange = { wifiSenha = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(color = Color.White),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    placeholder = {
+                        Text(text = "Nome da senha do Wifi do dispositivo", color = Color(0xFFFFFDFD))
+                    }
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
@@ -269,7 +313,10 @@ fun Add_DispoScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     androidx.compose.material.Button(
-                        onClick = { navController.navigate("add_qr/$deviceName/$environmentName") },
+                        onClick = {
+                            val infoQR = "$wifiSSID, $wifiSenha, $deviceName, $environmentName"
+                            navController.navigate("add_qr/$infoQR")
+                        },
                         shape = RoundedCornerShape(6.dp),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = Color(0xffe05950),
